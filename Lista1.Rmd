@@ -1,0 +1,627 @@
+---
+lang: "pt-br"
+output:
+  pdf_document:
+header-includes:
+   - \usepackage{fancyhdr}
+   - \pagestyle{fancy}
+   - \fancyhf{}  
+   - \renewcommand{\headrulewidth}{0pt}  
+   - \fancyfoot[L]{\includegraphics[width=2cm]{logo.jpg}}
+   - \fancyfoot[C]{}
+   - \fancyfoot[R]{Página \thepage}
+---
+
+\begin{titlepage}
+\centering
+\includegraphics[width=3cm]{logo.jpg}
+\vfill
+{\Huge CE319- Estatística Multivariada \par}
+{\huge Listas de Exercícios \par}
+\vspace{1cm}
+{\Large Luiz Henrique - 20213026 \par}
+{\Large Mateus Souza -  20207154 \par}
+\vfill
+{\large Abril/2024 \par}
+\end{titlepage}
+
+# 1.
+Os dados apresentados no arquivo ‘football.txt’, disponível na página da disciplina, são informações de 335 atletas da liga profissional de futebol americano. As variáveis são as seguintes:
+
+• Atleta - nome do atleta;
+
+• Universidade - nome da universidade;
+
+• Posição - posição em que joga;
+
+• Pontuação - escore;
+
+• Altura - em polegadas;
+
+• Envergadura - em polegadas;
+
+• Peso - em libras;
+
+• Comp.mao - comprimento da mão em polegadas;
+
+• Tempo.40 - tempo para percorrer 40 jardas (segundos);
+
+• Força - resultado do teste de força;
+
+• Pulo.vert - distância vertical do salto;
+
+• Pulo.hor - distância horizontal do salto;
+
+• Corrida - tempo (em segundos);
+
+• Corrida2 - tempo (em segundos).
+
+Faça uma análise descritiva dos dados. Utilize gráficos, obtenha as medidas descritivas vistas em aula. Converta as variáveis para unidades de medida adotadas no Brasil.
+  
+  
+```{r, warning=FALSE, message=FALSE}
+#install.packages("ggplot2")
+#install.packages("reshape2")
+#install.packages("aplpack")
+#install.packages("plotly")
+#install.packages("ellipse")
+#install.packages("lattice")
+#install.packages("psych")
+library(ggplot2)
+library(reshape2)
+library(aplpack)
+library(plotly)
+library(ellipse)
+library(lattice)
+library(psych)
+
+#importação
+df1 <- read.table(file = "UD02_Base_Football.txt", header = TRUE, encoding = "latin1")
+head(df1)
+#conversão de medidas
+df1$Altura <- df1$Altura * 2.54
+df1$Envergadura <- df1$Envergadura * 2.54
+df1$Peso <- df1$Peso * 0.453592
+df1$Comp.mao <- df1$Comp.mao * 2.54
+head(df1)
+#descritiva
+summary(df1[, -c(1:3)])
+#matriz de covariância
+matriz_cov <- cov(df1[, -c(1:3)], use = "pairwise.complete.obs")
+matriz_cov_long <- melt(matriz_cov)
+ggplot(matriz_cov_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Covariância") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+#matriz de correlação
+matriz_cor <- cor(df1[, -c(1:3)], use = "pairwise.complete.obs")
+matriz_cor_long <- melt(matriz_cor)
+ggplot(matriz_cor_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Correlação") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+#histograma
+ggplot(df1[, -c(1:3)], aes(x = Corrida)) +
+  geom_histogram(bins = 20, fill = 'indianred', color = 'black') +
+  labs(x = "Corrida de 100m", y = "Frequência") +
+  theme_bw(base_size = 14)
+#boxplot
+ggplot(df1[, -c(1:3)], aes(y = Corrida)) +
+  geom_boxplot(fill = 'indianred', color = 'black') +
+  labs(y = "Corrida de 100m") +
+  theme_bw(base_size = 14)
+#boxplot
+#p <- plot_ly(df1[, -c(1:3)], x = ~Pontuação, y = ~"Atleta", type = "box", 
+#             marker = list(color = 'indianred')) %>%
+#  layout(title = "Pontuações nas 10 provas para cada atleta",
+#         xaxis = list(title = "Pontuação"),
+#         yaxis = list(title = "Atleta"),
+#         showlegend = FALSE)
+#p
+#3d
+#p3 <- plot_ly(df1[, -c(1:3)], x = ~Corrida, y = ~Corrida2, z = ~Pulo.hor, 
+#               type = "scatter3d", mode = "markers",
+#               marker = list(color = ~Pulo.hor, size = ~Peso, colorscale = "Viridis")) %>%
+#  layout(title = "Gráfico em três dimensões para Corrida de 100m, de 400m e salto em distância",
+#         scene = list(
+#           xaxis = list(title = "Corrida de 100m"),
+#           yaxis = list(title = "Corrida de 400m"),
+#           zaxis = list(title = "Salto em distância")
+#         ))
+#p3
+```
+
+
+# 2.
+Considere a matriz de dados: \[ X = \begin{pmatrix}
+-1 & 3 & -2 \\
+2 & 4 & 2 \\
+5 & 2 & 3 \\
+\end{pmatrix} \]
+
+
+a) Calcule a matriz de desvios (resíduos) $x-1\bar{x}'$. Essa matriz tem rank completo? Justifique.
+
+```{r, warning=FALSE, message=FALSE}
+
+X <- matrix(c(-1, 3, -2, 2, 4, 2, 5, 2, 3), nrow = 3, byrow = TRUE)
+X
+media_colunas <- colMeans(X)
+colMeans(X)
+matriz_medias_t <- matrix(rep(t(colMeans(X)),3), nrow = 3, byrow = TRUE)
+matriz_medias_t
+matriz_desvios <- X - matriz_medias_t
+matriz_desvios
+det_matriz_desvios <- det(matriz_desvios)
+det_matriz_desvios
+if (det_matriz_desvios != 0) {
+  print("A matriz tem rank completo.")
+} else {
+  print("A matriz não tem rank completo.")
+}
+```
+
+b) Determine $S$ e calcule a variância generalizada. Interprete-a geometricamente.
+
+
+```{r, warning=FALSE, message=FALSE}
+
+S <- (1/(nrow(X)-1)) * t(X - matriz_medias_t) %*% (X - matriz_medias_t)
+S
+det_S <- det(S)
+det_S 
+
+# Determinante da matriz de covariância amostral S
+det_S <- det(S)
+
+# Volume gerado pelos vetores e1, e2, ..., ep (autovetores de S)
+volume <- sqrt(abs(det_S))
+
+# Número de observações
+n <- nrow(X)
+
+# Número de variáveis
+p <- ncol(X)
+
+# Variância generalizada
+variancia_generalizada <- (volume^2) / ((n - 1)^p)
+
+# Exibindo os resultados
+cat("Determinante da matriz de covariância (|S|):", det_S, "\n")
+cat("Volume gerado pelos vetores (autovetores de S):", volume, "\n")
+cat("Número de observações (n):", n, "\n")
+cat("Número de variáveis (p):", p, "\n")
+cat("Variância generalizada:", variancia_generalizada, "\n")
+
+
+```
+
+
+c) Usando os resultados do ítem anterior, calcule a variância total.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+
+# Calculando a variância total
+variancia_total <- variancia_generalizada * ((n - 1)^p)
+
+# Exibindo o resultado
+cat("Variância Total:", variancia_total, "\n")
+
+
+```
+
+# 3.
+Os dados do arquivo ‘radioterapia.txt’, disponível na página da disciplina, referem-se a escores atribuídos
+a pacientes com câncer, tratados com radioterapia, segundo as seguintes variáveis:
+
+• x1: escore relativo ao número de sintomas;
+
+• x2: escore referente às atividades (numa escala de 1-5);
+
+• x3: escore de sono (1-5);
+
+• x4: escore de alimentação (1-3);
+
+• x5: escore de apetite (1-5);
+
+• x6: escore de reações na pele (0-3).
+
+Faça uma análise descritiva desses dados, usando gráficos, médias, variâncias e covariâncias, correlações. . .
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+df2 <- read.table(file = "UD02_Base_Radioterapia.txt", header = TRUE, encoding = "latin1")
+head(df2)
+summary(df2)
+#matriz de covariância
+matriz_cov <- cov(df2, use = "pairwise.complete.obs")
+matriz_cov_long <- melt(matriz_cov)
+ggplot(matriz_cov_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Covariância") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+#matriz de correlação
+matriz_cor <- cor(df2, use = "pairwise.complete.obs")
+matriz_cor_long <- melt(matriz_cor)
+ggplot(matriz_cor_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Correlação") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+#histograma
+ggplot(df2, aes(x = Symptoms)) +
+  geom_histogram(bins = 20, fill = 'indianred', color = 'black') +
+  labs(x = "Symptoms") +
+  theme_bw(base_size = 14)
+#barplot symptoms por skinreact
+ggplot(df2, aes(x = factor(Skinreact), y = Symptoms, fill = factor(Skinreact))) +
+  geom_bar(stat = "summary", fun = "mean", position = "dodge") +
+  labs(x = "Skinreact", y = "Média de Symptoms", fill = "Skinreact") +
+  ggtitle("Média de Symptoms por Skinreact") +
+  theme_minimal()
+
+```
+
+# 4.
+Os dados contidos no arquivo ossos.txt, disponível na página da disciplina, referem-se ao tamanho (cm) de determinado osso em crianças. Cada criança teve o osso medido semestralmente a partir dos oito anos de idade, de tal forma que $y_1$ se refere à medida aos 8 anos de idade, $y_2$ aos oito e meio, $y_3$ aos nove e $y_4$ aos nove e meio.
+
+a) Usando o R, obtenha o vetor de médias, a matriz de covariâncias e a matriz de correlações amostrais;
+
+```{r, warning=FALSE, message=FALSE}
+
+df3 <- read.table(file = "UD02_Base_Ossos.txt", header = TRUE, encoding = "latin1")
+df3 <- df3[,-c(1)]
+head(df3)
+df3 <- as.matrix(df3)
+#vetor médias
+media_colunas <- colMeans(df3)
+media_colunas
+#matriz de covariância
+matriz_cov <- cov(df3, use = "pairwise.complete.obs")
+matriz_cov_long <- melt(matriz_cov)
+ggplot(matriz_cov_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Covariância") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+#matriz de correlação
+matriz_cor <- cor(df3, use = "pairwise.complete.obs")
+matriz_cor_long <- melt(matriz_cor)
+ggplot(matriz_cor_long, aes(Var2, Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, limit = c(-1, 1), space = "Lab",
+                       name = "Correlação") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, size = 10, hjust = 1)) +
+  coord_fixed()
+```
+
+b) Obtenha a variância generalizada e a variância total;
+
+```{r, warning=FALSE, message=FALSE}
+
+matriz_medias_t <- matrix(rep(media_colunas,nrow(df3)), nrow = nrow(df3), byrow = TRUE)
+matriz_medias_t
+matriz_desvios <- df3 - matriz_medias_t
+matriz_desvios
+
+
+S <- (1/(nrow(df3)-1)) * t(df3 - matriz_medias_t) %*% (df3 - matriz_medias_t)
+S
+det_S <- det(S)
+det_S 
+
+# Determinante da matriz de covariância amostral S
+det_S <- det(S)
+
+# Volume gerado pelos vetores e1, e2, ..., ep (autovetores de S)
+volume <- sqrt(abs(det_S))
+
+# Número de observações
+n <- nrow(df3)
+
+# Número de variáveis
+p <- ncol(df3)
+
+# Variância generalizada
+variancia_generalizada <- (volume^2) / ((n - 1)^p)
+
+# Exibindo os resultados
+cat("Determinante da matriz de covariância (|S|):", det_S, "\n")
+cat("Volume gerado pelos vetores (autovetores de S):", volume, "\n")
+cat("Número de observações (n):", n, "\n")
+cat("Número de variáveis (p):", p, "\n")
+cat("Variância generalizada:", variancia_generalizada, "\n")
+
+
+
+# Calculando a variância total
+variancia_total <- variancia_generalizada * ((n - 1)^p)
+
+# Exibindo o resultado
+cat("Variância Total:", variancia_total, "\n")
+```
+
+c) Usando a função xyplot da biblioteca lattice, faça um gráfico com o tamanho do osso no eixo vertical, a idade da criança no eixo horizontal e cada criança representada por uma linha, que une os quatro pontos correspondentes às suas quatro medidas. Adicione ao gráfico a linha média.
+
+```{r, warning=FALSE, message=FALSE}
+
+df3 <- read.table(file = "UD02_Base_Ossos.txt", header = TRUE, encoding = "latin1")
+df3 <- df3[,-c(1)]
+dataxy <- data.frame(idade = c(rep(8,20),rep(8.5,20),rep(9,20),rep(9.5,20)), valores = c(df3$y1,df3$y2,df3$y3,df3$y4))
+
+# Criar o gráfico com xyplot
+p <- xyplot(valores ~ idade , data = dataxy, type = "l", lwd = 1,
+            xlab = "Idade da Criança", ylab = "Tamanho do Osso (cm)",
+            main = "Tamanho do Osso em Crianças",
+            panel = function(x, y, ...) {
+              panel.xyplot(x, y, ...)
+              panel.abline(h = mean(y, na.rm = TRUE), col = "red", lty = 2)
+            })
+
+# Mostrar o gráfico
+print(p)
+
+
+
+
+```
+
+d) Faça um correlograma. Analise os resultados obtidos.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+cor.plot(df3)
+
+```
+
+# 5.
+Os dados presentes no arquivo ‘glicose.txt’, disponível na página da disciplina, referem-se a seis medidas de glicose no sangue, tomadas em 50 mulheres. Os y’s representam os níveis de glicose registrados nas três ocasiões; os x’s são as medidas de glicose tomadas uma hora após a ingestão de açúcar.
+
+a) Obtenha o vetor de médias, a matriz de covariâncias e a matriz de correlações amostrais para todas as seis variáveis;
+
+b) Considerando a partição das variáveis originais em $(x; y)$, re-apresente os resultados do item anterior, destacando, no vetor e nas matrizes, os vetores de média e as matrizes de covariâncias originadas pela partição;
+
+c) Construa gráficos 3d para $x$ e para $y$. Experimente diferentes ângulos para a visualização dos resultados.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+
+
+
+```
+
+# 6.
+
+Considere as duas matrizes de covariâncias:
+
+\[
+\begin{minipage}{.5\linewidth}
+  \centering
+  \(
+  \Sigma_1 = \begin{pmatrix}
+  14 & 8 & 3 \\
+  8 & 5 & 2 \\
+  3 & 2 & 1 \\
+  \end{pmatrix}
+  \)
+\end{minipage}%
+\begin{minipage}{.5\linewidth}
+  \centering
+  \(
+  \Sigma_2 = \begin{pmatrix}
+  6 & 6 & 1 \\
+  6 & 8 & 2 \\
+  1 & 2 & 1 \\
+  \end{pmatrix}
+  \)
+\end{minipage}
+\]
+
+Mostre que a variância generalizada da população 2 é maior do que a da população 1, embora a variância total seja maior para a população 1. Comente com relação a esse fato, baseado nas covariâncias e nas correlações.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+# Declarando a matriz X1
+X1 <- matrix(c(14, 8, 3, 8, 5, 2, 3, 2, 1), nrow = 3, ncol = 3, byrow = TRUE)
+X1
+X2 <- matrix(c(6, 6, 1, 6, 8, 2, 1, 2, 1), nrow = 3, ncol = 3, byrow = TRUE)
+X2
+media_colunas <- colMeans(X1)
+matriz_medias_t <- matrix(rep(media_colunas,nrow(X1)), nrow = nrow(X1), byrow = TRUE)
+matriz_desvios <- X1 - matriz_medias_t
+S <- (1/(nrow(X1)-1)) * t(matriz_desvios) %*% (matriz_desvios)
+det_S <- det(S)
+volume <- sqrt(abs(det_S))
+n <- nrow(X1)
+p <- ncol(X1)
+variancia_generalizada <- (volume^2) / ((n - 1)^p)
+cat("Variância generalizada X1:", variancia_generalizada, "\n")
+variancia_total <- variancia_generalizada * ((n - 1)^p)
+cat("Variância Total X2:", variancia_total, "\n")
+
+media_colunas <- colMeans(X2)
+matriz_medias_t <- matrix(rep(media_colunas,nrow(X2)), nrow = nrow(X2), byrow = TRUE)
+matriz_desvios <- X2 - matriz_medias_t
+S <- (1/(nrow(X2)-1)) * t(matriz_desvios) %*% (matriz_desvios)
+det_S <- det(S)
+volume <- sqrt(abs(det_S))
+n <- nrow(X2)
+p <- ncol(X2)
+variancia_generalizada <- (volume^2) / ((n - 1)^p)
+cat("Variância generalizada X2:", variancia_generalizada, "\n")
+variancia_total <- variancia_generalizada * ((n - 1)^p)
+cat("Variância Total X2:", variancia_total, "\n")
+
+```
+
+# 7.
+Considere os dois seguintes vetores de dados:
+
+\[
+\begin{minipage}{.5\linewidth}
+  \centering
+  \( y_1 = \begin{pmatrix}
+  10 \\
+  8 \\
+  2 \\
+  \end{pmatrix} \)
+\end{minipage}%
+\begin{minipage}{.5\linewidth}
+  \centering
+  \( y_2 = \begin{pmatrix}
+  6 \\
+  5 \\
+  4 \\
+  \end{pmatrix} \)
+\end{minipage}
+\]
+
+Considerando esse par de observações, calcule as seguintes medidas de distância sem usar as funções específicas do R:
+
+a) Distância Euclideana;
+
+b) Distância de Manhattan;
+
+c) Distância de Chebyshev;
+
+d) Distância de Canberra;
+
+e) Distância de Minkowski.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+# Vetores y1 e y2
+y1 <- c(10, 8, 2)
+y2 <- c(6, 5, 4)
+
+# Cálculo da distância Euclidiana
+dist_euclidiana <- sqrt(sum((y1 - y2)^2))
+dist_euclidiana
+
+# Cálculo da distância de Manhattan
+dist_manhattan <- sum(abs(y1 - y2))
+dist_manhattan
+
+# Cálculo da distância de Chebyshev
+dist_chebyshev <- max(abs(y1 - y2))
+dist_chebyshev
+
+# Cálculo da distância de Canberra
+dist_canberra <- sum(abs(y1 - y2) / (abs(y1) + abs(y2)))
+dist_canberra
+
+
+# Cálculo da distância de Minkowski com p = 3
+p <- 3
+dist_minkowski <- (sum(abs(y1 - y2)^p))^(1/p)
+dist_minkowski
+
+
+```
+
+# 8.
+Considere os dois seguintes vetores de dados binários:
+\[
+\begin{minipage}{.5\linewidth}
+  \centering
+  \( y_1 = \begin{pmatrix}
+  0 \\
+  0 \\
+  1 \\
+  0 \\
+  1 \\
+  1 \\
+  1 \\
+  1 \\
+  \end{pmatrix} \)
+\end{minipage}%
+\begin{minipage}{.5\linewidth}
+  \centering
+  \( y_2 = \begin{pmatrix}
+  0 \\
+  1 \\
+  1 \\
+  0 \\
+  0 \\
+  1 \\
+  0 \\
+  1 \\
+  \end{pmatrix} \)
+\end{minipage}
+\]
+
+Considerando esse par de observações, calcule as seguintes medidas de similaridades sem usar as funções
+específicas do R:
+a) Índice de empates simples;
+b) Índice de Jaccard;
+c) Índice de Dice-Sorensen;
+d) Índice de Oshiai.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+# Vetores y1 e y2
+y1 <- c(0, 0, 1, 0, 1, 1, 1, 1)
+y2 <- c(0, 1, 1, 0, 0, 1, 0, 1)
+
+# Cálculo do índice de empates simples
+num_empates <- sum(y1 == y2)
+num_total <- length(y1)
+indice_empates_simples <- num_empates / num_total
+indice_empates_simples
+
+# Cálculo do índice de Jaccard
+num_empates <- sum(y1 == y2)
+num_nao_empates <- sum(y1 != y2)
+indice_jaccard <- num_empates / (num_empates + num_nao_empates)
+indice_jaccard
+
+# Cálculo do índice de Dice-Sorensen
+num_empates <- sum(y1 == y2)
+num_elem_y1 <- sum(y1)
+num_elem_y2 <- sum(y2)
+indice_dice_sorensen <- 2 * num_empates / (num_empates + num_elem_y1 + num_elem_y2)
+indice_dice_sorensen
+
+# Cálculo do índice de Ochiai
+num_empates <- sum(y1 == y2)
+sqrt_num_elem_y1_y2 <- sqrt(sum(y1) * sum(y2))
+indice_ochiai <- num_empates / sqrt_num_elem_y1_y2
+indice_ochiai
+
+
+```
+
+# 9.
+Considere a base de dados USArrests. Usando as funções específicas do R, obtenha matrizes de distância
+usando as medidas estudadas em sala de aula. Produza visualizações das matrizes de distâncias usando
+mapas de calor. Compare os resultados.
+
+  
+```{r, warning=FALSE, message=FALSE}
+
+
+
+
+```
