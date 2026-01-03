@@ -28,4 +28,4 @@ O material cobre os fundamentos matemáticos e estatísticos da análise multiva
 
 ---
 **Autor:** Luiz Henrique Barretta Francisco  
-*Graduado em Estatística / Mestrando em Métodos Numéricos em Engenharia - UFPR*# Estatística Multivariada (CE319) - UFPR
+*Graduado em Estatística / Mestrando em Métodos Numéricos em Engenharia - UFPR*
